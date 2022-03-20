@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { Countrie } from './model/countries';
+import { MatTableDataSource } from '@angular/material/table';
+import { ICountrie } from './model/countries';
+import { CovidService } from './services/covidservice';
 
 @Component({
   selector: 'app-root',
@@ -8,23 +10,30 @@ import { Countrie } from './model/countries';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  _urlBase: string = 'http://localhost:5000/'
   title = 'covidapp';
-  TopTenCountries: Countrie;
-  tableTotalConfirmed: boolean = false;
-  constructor(public http: HttpClient) {
-    this.TopTenCountries = {}
+  dataSource = new MatTableDataSource();
+  displayedColumns = [
+    "country",
+    "countryCode",
+    "slug",
+    "newConfirmed",
+    "totalConfirmed",
+    "newDeaths",
+    "totalDeaths",
+    "newRecovered",
+    "totalRecovered",
+    "date"];
+  constructor(public http: HttpClient, private _covidServ: CovidService) {
   }
 
 
   TakeCountries() {
-    this.http.get<any>(`${this._urlBase}DadosIniciais`).subscribe(res => {
-      this.TopTenCountries = res
-      console.info("Top 10",this.TopTenCountries)
-    }, erro => {
-      alert('Falha')
-    })
+    this._covidServ.GetCovid().subscribe(
+      res => {
+        this.dataSource.data = res as ICountrie[]
+      },
+      err => {
+        alert(JSON.stringify(err))
+      });
   }
-
-
 }
